@@ -31,16 +31,14 @@ header.jumbotron {
 <div class="container">
   {% block userinfo %}
     <div class="span12">
-      <a id="browserid" class="pull-right" href="#">login / register</a>
-      <form method="POST" action="{{ url_for('do_login') }}">
-        {{ form.hidden_tag() }}
-      </form>
-      {#
-      {% if not user.is_authenticated %}
+      {% if current_user.is_authenticated() %}
+        <a class="pull-right" href="{{ url_for('do_logout') }}">{{ current_user }}</a>
       {% else %}
-        <a class="pull-right" href="">{{ user }}</a>
+        <a id="browserid" class="pull-right" href="#">login / register</a>
+        <form method="POST" action="{{ url_for('do_login') }}">
+          {{ form.hidden_tag() }}
+        </form>
       {% endif %}
-      #}
     </div>
   {% endblock %}
   <header class="jumbotron">
@@ -63,8 +61,8 @@ header.jumbotron {
   </header>
 
   {% block messages %}
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }}">
+    {% for category, message in get_flashed_messages(True) %}
+      <div class="alert alert-{{ category }}">
         {{ message }}
       </div>
     {% endfor %}
