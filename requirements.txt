@@ -1,0 +1,8 @@
+Flask==0.8
+
+Flask-Assets==0.6.2
+Flask-DebugToolbar==0.6.2
+Flask-Script==0.3.3
+git+https://github.com/sbook/flask-mongoengine.git#egg=flaskext.mongoengine
+
+path.py==2.2.2
