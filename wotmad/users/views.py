@@ -17,12 +17,12 @@ class UserBlueprint(Blueprint):
 
         @app.before_request
         def before_request():
-            print "Setting up user object."
             g.user = None
             if 'user_id' in session:
-                print "User ID found: %r" % session['user_id']
-                g.user = User.load_user(session['user_id'])
-                print "Set on g: %r" % g.user
+                try:
+                    g.user = User.load_user(session['user_id'])
+                except User.DoesNotExist:
+                    del session['user_id']
 
 blueprint = UserBlueprint('users', __name__)
 
@@ -77,7 +77,22 @@ def login():
                                                    defaults=defaults)
         session['user_id'] = user.id
         if created:
-            # TODO: Redirect to account setup page
+            # Set a better username
+            candidate, _ = email.split('@', 1)
+
+            # See if we have any users with this username already
+            qs = User.objects(username__istartswith=candidate)
+            if qs.count():
+                # Increment the count and shove it on the end of the candidate
+                # name
+                username = "{0}.{1}".format(candidate, qs.count() + 1)
+            else:
+                username = candidate
+
+            user.username = username
+            user.save()
+
+            # TODO: Redirect to account setup
             flash('Created user. Set your username!')
         else:
             flash('Logged in.')

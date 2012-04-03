@@ -23,7 +23,7 @@ class User(db.Document):
         return u'<User: {0}'.format(self.email)
 
     def __unicode__(self):
-        return unicode(self.email)
+        return unicode(self.username)
 
     def __str__(self):
         return self.__unicode__()
