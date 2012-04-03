@@ -1,12 +1,16 @@
 from hashlib import md5
-import subprocess
 
 from flask import Flask
-from flask import g, request, render_template, jsonify, json, flash, url_for, redirect
+from flask import g, request, flash, url_for, redirect
+from flask import json
+from flask import render_template, jsonify
 
 from flaskext import mongoengine
 from flaskext import login
 from flaskext import wtf
+
+import requests
+
 
 app = Flask(__name__)
 app.config['MONGODB_DB'] = 'wotmad-dev'
@@ -81,22 +85,22 @@ def do_login():
     form = LoginForm()
     if form.validate_on_submit():
         assertion = form.data['assertion']
+        # XXX: Is this the best way to load the audience?
+        # Should probably be in the settings..
         audience = request.url_root.rstrip('/')
         # Do the actual browserid login here
-        payload = "assertion={0}&audience={1}".format(assertion, audience)
-        print "Verifying with payload: {0}".format(payload)
+        payload = dict(assertion=assertion, audience=audience)
+        print "Verifying with payload: {0!r}".format(payload)
 
-        curl = subprocess.Popen(['curl', '-d', payload,
-                                 'https://browserid.org/verify'],
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        req = requests.post('https://browserid.org/verify', data=payload,
+                            verify=True)
         try:
-            out, err = curl.communicate()
-            result = json.loads(out)
+            result = json.loads(req.content)
         except ValueError:
-            return "Error connecting with BrowserID."
+            return "Error connecting with BrowserID", 500
 
-        if result['status'] == 'failure':
-            return "Login failed. Reason: {reason}".format(**result)
+        if result['status'] != 'okay':
+            return "Error validating login: {0}".format(result), 500
 
         email = result['email']
 
