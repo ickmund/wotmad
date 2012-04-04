@@ -39,8 +39,9 @@ def do_user_setup():
 @login_required
 def setup_account():
     if g.user.is_active:
-        flash('Already setup!', 'error')
-        return redirect(url_for('index'))
+        #flash('Already setup!', 'error')
+        #return redirect(url_for('index'))
+        pass
 
     # If the user isn't active, they need to set their username
     form = SetupForm(obj=g.user)
