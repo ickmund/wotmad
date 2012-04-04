@@ -29,7 +29,7 @@ header.jumbotron {
 <div class="container">
   {% block userinfo %}
     <div class="span12">
-      {% if g.user and g.user.is_authenticated() %}
+      {% if g.user %}
         <a class="pull-right" href="{{ url_for('users.logout') }}">{{ g.user }}</a>
       {% else %}
         <a id="browserid" class="pull-right" href="#">login / register</a>

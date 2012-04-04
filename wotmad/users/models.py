@@ -5,16 +5,7 @@ class User(db.Document):
     id = db.ObjectIdField()
     email = db.StringField(required=True)
     username = db.StringField(required=True)
-    active = db.BooleanField()
-
-    def is_authenticated(self):
-        return True
-
-    def is_active(self):
-        return self.active
-
-    def is_anonymous(self):
-        return False
+    is_active = db.BooleanField()
 
     def get_id(self):
         return unicode(self.id)

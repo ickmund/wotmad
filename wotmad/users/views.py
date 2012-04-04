@@ -7,35 +7,51 @@ from flask import request, render_template, flash, g, session, redirect, \
     url_for, json
 
 
-class UserBlueprint(Blueprint):
+blueprint = Blueprint('users', __name__)
 
-    def register(self, app, options, first_registration=False):
-        super(UserBlueprint, self).register(app, options, first_registration)
-
-        if not first_registration:
-            return
-
-        @app.before_request
-        def before_request():
-            g.user = None
-            if 'user_id' in session:
-                try:
-                    g.user = User.load_user(session['user_id'])
-                except User.DoesNotExist:
-                    del session['user_id']
-
-blueprint = UserBlueprint('users', __name__)
-
-
-from wotmad.users.forms import LoginForm
+from wotmad.users.forms import LoginForm, SetupForm
 from wotmad.users.models import User
 from wotmad.users.decorators import login_required
 
 
-@blueprint.route('/me/')
+@blueprint.before_app_request
+def load_user():
+    g.user = None
+    if 'user_id' in session:
+        try:
+            g.user = User.load_user(session['user_id'])
+        except User.DoesNotExist:
+            del session['user_id']
+
+
+@blueprint.before_app_request
+def do_user_setup():
+    goto = url_for('users.setup_account')
+    logout_url = url_for('users.logout')
+    if request.path in (goto, logout_url):
+        return
+
+    if g.user and g.user.is_active is False:
+        return redirect(url_for('users.setup_account'))
+
+
+@blueprint.route('/_setup/', methods=['GET', 'POST'])
 @login_required
-def profile():
-    return render_template("users/profile.html", user=g.user)
+def setup_account():
+    if g.user.is_active:
+        flash('Already setup!', 'error')
+        return redirect(url_for('index'))
+
+    # If the user isn't active, they need to set their username
+    form = SetupForm(obj=g.user)
+    if form.validate_on_submit():
+        g.user.username = form.username.data
+        g.user.is_active = True
+        g.user.save()
+        flash("Username updated.")
+        return redirect(url_for('index'))
+
+    return render_template('users/setup_account.html', form=form)
 
 
 @blueprint.route('/logout/')
