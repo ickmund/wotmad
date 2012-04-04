@@ -10,13 +10,13 @@ class LoginForm(wtf.Form):
 
 
 USERNAME_REGEX_ERROR = ("Username must begin with a letter and can only "
-                        "contain letters and numbers.")
+                        "contain letters, numbers, and periods.")
 
 
 class SetupForm(wtf.Form):
     username = wtf.TextField('Username',
-                             [wtf.Required(), wtf.Length(5, 30),
-                              wtf.Regexp(r'^[a-zA-Z][a-zA-Z0-9]+$',
+                             [wtf.Required(), wtf.Length(4, 30),
+                              wtf.Regexp(r'^[a-zA-Z][a-zA-Z0-9\.]+$',
                                          message=USERNAME_REGEX_ERROR)])
 
     def validate_username(self, field):

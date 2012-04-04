@@ -1,14 +1,24 @@
 {% extends "base.html" %}
 
 {% block content %}
+<h2>By what name do you wish to be known?</h2>
+<p>
+  Enter your desired username here. Note that the username must be between 4 and
+  30 characters, must start with a letter, and can only contain letters,
+  numbers, or periods.
+</p>
 <form method="POST">
   {{ form.hidden_tag() }}
-  {{ form.username.label }} {{ form.username }}
-  {% if form.username.errors %}
-    <span class="help-block">
-      {{ form.username.errors }}
-    </span>
-  {% endif %}
+  <div class="control-group {% if form.username.errors %}error{% endif %}">
+    {{ form.username }}
+    {% if form.username.errors %}
+      <span class="help-block">
+        <ul>
+          <li>{{ form.username.errors|join("</li><li>") }}</li>
+      </ul>
+      </span>
+    {% endif %}
+  </div>
   <button type="submit" class="btn btn-primary">Save</button>
 </form>
 {% endblock %}
